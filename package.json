@@ -1,0 +1,16 @@
+{
+  "name": "launchpad-ec2-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A small deployment tracker for practicing AWS EC2 deployments.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "db:seed": "node seed.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "express": "^4.21.2"
+  }
+}

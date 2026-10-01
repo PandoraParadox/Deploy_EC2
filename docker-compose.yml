@@ -1,0 +1,11 @@
+services:
+  launchpad:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - launchpad-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  launchpad-data:

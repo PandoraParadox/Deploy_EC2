@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Launchpad - deployment tracker cho bài lab AWS EC2" />
+    <title>Launchpad / EC2 Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="Launchpad home">
+          <span class="brand-mark"><span></span><span></span><span></span></span>
+          <span>launchpad</span>
+        </a>
+        <div class="workspace-switcher">
+          <span class="workspace-dot"></span>
+          <span><small>WORKSPACE</small>EC2 learning lab</span>
+          <span class="chevron">⌄</span>
+        </div>
+        <nav class="main-nav" aria-label="Main navigation">
+          <a class="nav-item active" href="#overview"><span class="nav-icon">⌂</span>Overview</a>
+          <a class="nav-item" href="#deployments"><span class="nav-icon">↗</span>Deployments <b class="nav-count" id="activeNavCount">0</b></a>
+          <a class="nav-item" href="#projects"><span class="nav-icon">▦</span>Projects</a>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="server-status"><span class="pulse"></span><span><small>SERVER STATUS</small>Healthy · localhost:3000</span></div>
+          <a class="nav-item" href="/health" target="_blank"><span class="nav-icon">⚙</span>Health check</a>
+          <div class="profile"><span class="avatar">LN</span><span><strong>Linh Nguyen</strong><small>Administrator</small></span><span class="more">•••</span></div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div><p class="eyebrow">THURSDAY, OCTOBER 01, 2026</p><h1>Good morning, Linh <span class="wave">✦</span></h1></div>
+          <div class="top-actions"><span class="live-indicator"><span></span>Live</span><button class="icon-button" aria-label="Notifications">♧<i></i></button><button class="avatar avatar-large">LN</button></div>
+        </header>
+
+        <section class="hero-row" id="overview">
+          <div><span class="section-kicker">DEPLOYMENT CONTROL</span><h2>Everything you ship,<br /><em>in one clear view.</em></h2><p class="hero-copy">A quiet place to watch your services move from commit to production.</p></div>
+          <div class="hero-orbit"><div class="orbit orbit-1"></div><div class="orbit orbit-2"></div><div class="orbit-core"><span>↗</span></div><span class="orbit-label label-top">EC2</span><span class="orbit-label label-right">API</span><span class="orbit-label label-bottom">DB</span></div>
+        </section>
+
+        <section class="stats-grid" aria-label="Deployment statistics">
+          <article class="stat-card"><div class="stat-top"><span>PROJECTS</span><span class="stat-icon teal">▦</span></div><strong id="projectStat">—</strong><small>active workspaces</small></article>
+          <article class="stat-card"><div class="stat-top"><span>SUCCESSFUL</span><span class="stat-icon green">✓</span></div><strong id="successStat">—</strong><small class="positive">↑ 12.5% <span>this month</span></small></article>
+          <article class="stat-card"><div class="stat-top"><span>IN PROGRESS</span><span class="stat-icon amber">◌</span></div><strong id="activeStat">—</strong><small>currently running</small></article>
+          <article class="stat-card"><div class="stat-top"><span>FAILED</span><span class="stat-icon red">!</span></div><strong id="failedStat">—</strong><small>needs attention</small></article>
+        </section>
+
+        <section class="content-grid">
+          <div class="panel deployments-panel" id="deployments"><div class="panel-heading"><div><span class="section-kicker">RECENT ACTIVITY</span><h3>Deployment history</h3></div><button class="text-button" id="refreshButton">Refresh <span>↻</span></button></div><div class="table-wrap"><table><thead><tr><th>PROJECT</th><th>VERSION</th><th>STATUS</th><th>DEPLOYED BY</th><th>TIME</th></tr></thead><tbody id="deploymentRows"><tr><td colspan="5" class="loading">Loading deployments...</td></tr></tbody></table></div></div>
+          <div class="panel activity-panel"><div class="panel-heading"><div><span class="section-kicker">TIMELINE</span><h3>Latest updates</h3></div><span class="small-date">TODAY</span></div><div class="timeline" id="activityList"><div class="loading">Loading activity...</div></div></div>
+        </section>
+
+        <section class="lower-grid" id="projects"><div class="panel quick-deploy"><div class="panel-heading"><div><span class="section-kicker">QUICK ACTION</span><h3>Start a deployment</h3></div><span class="rocket">↗</span></div><form id="deployForm"><label>Project<select id="projectId" required><option value="">Loading projects...</option></select></label><label>Version<input id="version" required placeholder="v2.4.2" /></label><label>Deployed by<input id="deployedBy" required value="Linh Nguyen" /></label><button class="primary-button" type="submit">Start deployment <span>↗</span></button><p class="form-message" id="formMessage" role="status"></p></form></div><div class="panel tip-panel"><span class="tip-symbol">⌘</span><span class="section-kicker">EC2 FIELD NOTE</span><h3>Keep your process observable.</h3><p>Health checks, logs, and a small database give you the visibility to debug a deployment from the instance itself.</p><div class="tip-line"><span></span>Next: connect this app to RDS</div></div></section>
+        <footer><span>LAUNCHPAD / EC2 LAB</span><span>SQLite · Express · Node.js</span></footer>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>
