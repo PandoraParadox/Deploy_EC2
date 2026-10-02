@@ -118,7 +118,7 @@ server {
 EOF
 
 sudo rm -f /etc/nginx/sites-enabled/default
-sudo ln -s /etc/nginx/sites-available/launchpad /etc/nginx/sites-enabled/launchpad
+sudo ln -sfn /etc/nginx/sites-available/launchpad /etc/nginx/sites-enabled/launchpad
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -151,4 +151,106 @@ Trong EC2 Security Group, mở inbound:
 
 UFW trong user data đã cho phép SSH và `Nginx Full`, nên không cần mở port `3000` ra Internet.
 
-> Bài lab dùng SQLite để đơn giản hóa bước đầu. Khi cần nhiều instance hoặc dữ liệu production, chuyển database sang Amazon RDS và giữ API contract hiện tại.
+## Cách 2: EC2 chạy Node.js + PostgreSQL cài trực tiếp
+
+Ở cách này không dùng Docker và không dùng Amazon RDS. PostgreSQL được cài trực tiếp trên cùng EC2, Node.js chạy bằng PM2, còn Nginx làm reverse proxy.
+Khi có biến `DATABASE_URL`, app tự chọn PostgreSQL và tự tạo bảng từ `schema.postgres.sql`.
+
+Bạn có thể dùng file [`user-data-postgres.sh`](user-data-postgres.sh) để cài sẵn công cụ. Dán file vào **Advanced details → User data** khi tạo EC2 Ubuntu 24.04. Script chỉ cài Node.js 20, PostgreSQL, PM2, Nginx, Git và UFW, đồng thời bật PostgreSQL/Nginx; không clone source, không tạo database, không cấu hình app và không mở firewall. Các bước còn lại thực hiện thủ công sau khi SSH vào EC2.
+
+Trong EC2 Security Group chỉ mở:
+
+```text
+TCP 22 from your IP
+TCP 80 from 0.0.0.0/0
+```
+
+Không mở TCP `3000` hoặc `5432` ra Internet.
+
+### 1. Kiểm tra công cụ đã cài
+
+SSH vào EC2 sau khi User Data hoàn tất:
+
+```bash
+node --version
+npm --version
+pm2 --version
+git --version
+sudo systemctl status postgresql --no-pager
+sudo systemctl status nginx --no-pager
+```
+
+Nếu PostgreSQL chưa chạy, bật lại:
+
+```bash
+sudo systemctl enable --now postgresql
+sudo systemctl status postgresql --no-pager
+```
+
+Tạo database và user riêng cho ứng dụng:
+
+```bash
+sudo -u postgres psql
+```
+
+Trong màn hình `psql`, chạy các lệnh sau và thay password mẫu bằng password mạnh:
+
+```sql
+CREATE USER app_user WITH PASSWORD 'change-this-password';
+CREATE DATABASE launchpad OWNER app_user;
+\\q
+```
+
+PostgreSQL chỉ cần lắng nghe trên localhost. Không mở port `5432` trong Security Group hoặc UFW ra Internet.
+
+### 2. Lấy source và cài dependency
+
+```bash
+cd ~
+git clone <your-repository-url> deploy-web
+cd ~/deploy-web
+npm ci --omit=dev
+```
+
+Tạo file môi trường để app kết nối PostgreSQL local:
+
+```bash
+cat > .env <<'EOF'
+PORT=3000
+DATABASE_URL=postgresql://app_user:<POSTGRES-PASSWORD>@127.0.0.1:5432/launchpad
+DATABASE_SSL=false
+EOF
+chmod 600 .env
+```
+
+Khởi tạo schema và dữ liệu mẫu một lần:
+
+```bash
+npm run db:seed
+```
+
+### 3. Chạy app trực tiếp bằng PM2
+
+```bash
+pm2 start server.js --name launchpad
+pm2 save
+pm2 startup
+```
+
+Lệnh `pm2 startup` sẽ in ra một lệnh `sudo ...`; copy và chạy đúng lệnh đó để app tự chạy sau khi EC2 reboot.
+
+### 4. Dùng Nginx làm reverse proxy
+
+Nginx proxy từ port `80` tới Node.js trên port `3000`. Dùng file cấu hình ở Cách 1, sau đó:
+
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+curl http://localhost/health
+pm2 status
+pm2 logs launchpad
+```
+
+Mở website tại `http://<EC2-PUBLIC-IP>`. Security Group của EC2 chỉ cần mở TCP `22` từ IP của bạn và TCP `80` từ Internet; không cần mở port `3000` hoặc `5432`.
+
+> Cách 1 phù hợp để học Docker. Cách 2 chạy toàn bộ trực tiếp trên EC2 với PostgreSQL local, không phụ thuộc Docker hoặc RDS.
